@@ -39,6 +39,17 @@ struct image {
         char *pixels;
 };
 
+/* Fonts contain the data needed for drawing text */
+struct font {
+        int alphabet_len;
+        const char *alphabet;
+        struct image *images;
+        SDL_Texture **textures;
+        int height;
+};
+
+/* The main font's bitmaps */
+
 static char _font_A_img_pixels[] = {
         0, 1, 1, 0,
         1, 0, 0, 1,
@@ -148,12 +159,12 @@ static char _font_L_img_pixels[] = {
 };
 
 static char _font_M_img_pixels[] = {
-        1, 1, 1, 1,
-        1, 1, 1, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1
+        1, 1, 0, 1, 0,
+        1, 0, 1, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1
 };
 
 static char _font_N_img_pixels[] = {
@@ -238,12 +249,12 @@ static char _font_V_img_pixels[] = {
 };
 
 static char _font_W_img_pixels[] = {
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 1, 1, 1,
-        0, 1, 1, 0
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 0, 0, 1,
+        1, 0, 1, 0, 1,
+        0, 1, 0, 1, 0
 };
 
 static char _font_X_img_pixels[] = {
@@ -273,9 +284,34 @@ static char _font_Z_img_pixels[] = {
         1, 1, 1, 1
 };
 
-#define ALPHABET_LEN 26
-static const char *_font_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static struct image _font_imgs[ALPHABET_LEN] = {
+static char _font_interrog_img_pixels[] = {
+        1, 1, 0,
+        0, 0, 1,
+        0, 1, 0,
+        0, 1, 0,
+        0, 0, 0,
+        0, 1, 0
+};
+
+static char _font_period_img_pixels[] = {
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+};
+
+static char _font_comma_img_pixels[] = {
+        0, 0,
+        0, 0,
+        0, 0,
+        0, 0,
+        0, 1,
+        1, 0,
+};
+
+static struct image _font_imgs[] = {
         {4, 6, _font_A_img_pixels},
         {4, 6, _font_B_img_pixels},
         {4, 6, _font_C_img_pixels},
@@ -288,7 +324,7 @@ static struct image _font_imgs[ALPHABET_LEN] = {
         {4, 6, _font_J_img_pixels},
         {4, 6, _font_K_img_pixels},
         {4, 6, _font_L_img_pixels},
-        {4, 6, _font_M_img_pixels},
+        {5, 6, _font_M_img_pixels},
         {4, 6, _font_N_img_pixels},
         {4, 6, _font_O_img_pixels},
         {4, 6, _font_P_img_pixels},
@@ -298,16 +334,28 @@ static struct image _font_imgs[ALPHABET_LEN] = {
         {3, 6, _font_T_img_pixels},
         {4, 6, _font_U_img_pixels},
         {4, 6, _font_V_img_pixels},
-        {4, 6, _font_W_img_pixels},
+        {5, 6, _font_W_img_pixels},
         {4, 6, _font_X_img_pixels},
         {3, 6, _font_Y_img_pixels},
         {4, 6, _font_Z_img_pixels},
+        {3, 6, _font_interrog_img_pixels},
+        {1, 6, _font_period_img_pixels},
+        {2, 6, _font_comma_img_pixels}
 };
-static SDL_Texture *_font_texs[ALPHABET_LEN] = {
+static SDL_Texture *_font_texs[] = {
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-        NULL, NULL
+        NULL, NULL, NULL, NULL, NULL
+};
+
+/* The main game font */
+static struct font _font = {
+        29,                              /* alphabet_len */
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?.,", /* alphabet */
+        _font_imgs,                      /* images */
+        _font_texs,                      /* textures */
+        0                                /* height (computed at run-time) */
 };
 
 /* The image for the menu cursor */
@@ -346,7 +394,7 @@ void die(const char *format, ...) {
 static void _clean_up(void) {
         {
                 int i;
-                for (i = 0; i < ALPHABET_LEN; i++) {
+                for (i = 0; i < _font.alphabet_len; i++) {
                         if (_font_texs[i]) {
                                 SDL_DestroyTexture(_font_texs[i]);
                         }
@@ -409,6 +457,47 @@ static SDL_Texture *_create_texture_from_image(SDL_Renderer *renderer,
         return tex;
 }
 
+/* Draw text in a certain font at a certain position. */
+void draw_text(SDL_Renderer *renderer,
+               struct font *font,
+               int start_x,
+               int start_y,
+               const char *text)
+{
+        int i;
+        int pen_x = start_x;
+        int pen_y = start_y;
+        
+        for (i = 0; text[i] != '\0'; i++) {
+                int j;
+
+                if (text[i] == ' ') {
+                        pen_x += 4;
+                } else if (text[i] == '\n') {
+                        pen_x = start_x;
+                        pen_y += font->height + 1;
+                } else {
+                        for (j = 0; font->alphabet[j] != '\0'; j++) {
+                                if (font->alphabet[j] == text[i]) {
+                                        SDL_Rect rect;
+                                        struct image *image;
+
+                                        image = &font->images[j];
+
+                                        rect.x = pen_x;
+                                        rect.y = pen_y;
+                                        rect.w = image->width;
+                                        rect.h = image->height;
+
+                                        SDL_RenderCopy(renderer, font->textures[j], NULL, &rect);
+                                        pen_x += image->width + 1;
+                                        break;
+                                }
+                        }
+                }
+        }
+}
+
 int main(int argc, char *argv[]) {
         SDL_Color colors[2];
 
@@ -461,8 +550,14 @@ int main(int argc, char *argv[]) {
         /* Create the font textures. */
         {
                 int i;
-                for (i = 0; i < ALPHABET_LEN; i++) {
-                        _font_texs[i] = _create_texture_from_image(_renderer, &_font_imgs[i], colors, 2, &die);
+                for (i = 0; i < _font.alphabet_len; i++) {
+                        struct image *image = &_font_imgs[i];
+
+                        if (image->height > _font.height) {
+                                _font.height = image->height;
+                        }
+
+                        _font_texs[i] = _create_texture_from_image(_renderer, image, colors, 2, &die);
                 }
         }
 
@@ -490,33 +585,7 @@ int main(int argc, char *argv[]) {
                                        0xff, 0xff, 0xff,
                                        SDL_ALPHA_OPAQUE);
                 SDL_RenderClear(_renderer);
-                {
-                        int i;
-                        int pen_x = 0;
-                        const char *msg = "SELECTYOURHERITAGEMORTAL";
-                        
-                        for (i = 0; msg[i] != '\0'; i++) {
-                                int j;
-
-                                for (j = 0; _font_alphabet[j] != '\0'; j++) {
-                                        if (_font_alphabet[j] == msg[i]) {
-                                                SDL_Rect rect;
-                                                struct image *image;
-
-                                                image = &_font_imgs[j];
-
-                                                rect.x = pen_x;
-                                                rect.y = 0;
-                                                rect.w = image->width;
-                                                rect.h = image->height;
-
-                                                SDL_RenderCopy(_renderer, _font_texs[j], NULL, &rect);
-                                                pen_x += image->width + 1;
-                                                break;
-                                        }
-                                }
-                        }
-                }
+                draw_text(_renderer, &_font, 5, 5, "THE QUICK, BROWN FOX\nJUMPS OVER THE LAZY DOG.");
                 SDL_RenderPresent(_renderer);
 
                 /* Delay until the next frame. */
