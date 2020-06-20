@@ -39,6 +39,277 @@ struct image {
         char *pixels;
 };
 
+static char _font_A_img_pixels[] = {
+        0, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 1, 1, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1
+};
+
+static char _font_B_img_pixels[] = {
+        1, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 1, 1, 0
+};
+
+static char _font_C_img_pixels[] = {
+        0, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 1,
+        0, 1, 1, 0
+};
+
+static char _font_D_img_pixels[] = {
+        1, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 1, 1, 0
+};
+
+static char _font_E_img_pixels[] = {
+        1, 1, 1, 1,
+        1, 0, 0, 0,
+        1, 1, 1, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 0,
+        1, 1, 1, 1
+};
+
+static char _font_F_img_pixels[] = {
+        1, 1, 1, 1,
+        1, 0, 0, 0,
+        1, 1, 1, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 0
+};
+
+static char _font_G_img_pixels[] = {
+        0, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 0,
+        1, 0, 1, 1,
+        1, 0, 0, 1,
+        0, 1, 1, 0
+};
+
+static char _font_H_img_pixels[] = {
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 1, 1, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1
+};
+
+static char _font_I_img_pixels[] = {
+        1, 1, 1,
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0,
+        1, 1, 1
+};
+
+static char _font_J_img_pixels[] = {
+        1, 1, 1, 1,
+        0, 0, 0, 1,
+        0, 0, 0, 1,
+        0, 0, 0, 1,
+        1, 0, 0, 1,
+        0, 1, 1, 0
+};
+
+static char _font_K_img_pixels[] = {
+        1, 0, 0, 1,
+        1, 0, 1, 0,
+        1, 1, 0, 0,
+        1, 1, 0, 0,
+        1, 0, 1, 0,
+        1, 0, 0, 1
+};
+
+static char _font_L_img_pixels[] = {
+        1, 0, 0, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 0,
+        1, 1, 1, 1
+};
+
+static char _font_M_img_pixels[] = {
+        1, 1, 1, 1,
+        1, 1, 1, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1
+};
+
+static char _font_N_img_pixels[] = {
+        1, 1, 0, 1,
+        1, 0, 1, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1
+};
+
+static char _font_O_img_pixels[] = {
+        0, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        0, 1, 1, 0
+};
+
+static char _font_P_img_pixels[] = {
+        1, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 1, 1, 0,
+        1, 0, 0, 0,
+        1, 0, 0, 0
+};
+
+static char _font_Q_img_pixels[] = {
+        0, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        0, 1, 1, 0,
+        0, 0, 0, 1
+};
+
+static char _font_R_img_pixels[] = {
+        1, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1
+};
+
+static char _font_S_img_pixels[] = {
+        0, 1, 1, 0,
+        1, 0, 0, 1,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        1, 0, 0, 1,
+        0, 1, 1, 0
+};
+
+static char _font_T_img_pixels[] = {
+        1, 1, 1,
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0,
+};
+
+static char _font_U_img_pixels[] = {
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        0, 1, 1, 0
+};
+
+static char _font_V_img_pixels[] = {
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        0, 1, 0, 1,
+        0, 0, 1, 1,
+        0, 0, 0, 1
+};
+
+static char _font_W_img_pixels[] = {
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        1, 1, 1, 1,
+        0, 1, 1, 0
+};
+
+static char _font_X_img_pixels[] = {
+        1, 0, 0, 1,
+        1, 0, 0, 1,
+        0, 1, 1, 0,
+        0, 1, 1, 0,
+        1, 0, 0, 1,
+        1, 0, 0, 1
+};
+
+static char _font_Y_img_pixels[] = {
+        1, 0, 1,
+        1, 0, 1,
+        1, 0, 1,
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0
+};
+
+static char _font_Z_img_pixels[] = {
+        1, 1, 1, 1,
+        0, 0, 0, 1,
+        0, 0, 1, 0,
+        0, 1, 0, 0,
+        1, 0, 0, 0,
+        1, 1, 1, 1
+};
+
+#define ALPHABET_LEN 26
+static const char *_font_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static struct image _font_imgs[ALPHABET_LEN] = {
+        {4, 6, _font_A_img_pixels},
+        {4, 6, _font_B_img_pixels},
+        {4, 6, _font_C_img_pixels},
+        {4, 6, _font_D_img_pixels},
+        {4, 6, _font_E_img_pixels},
+        {4, 6, _font_F_img_pixels},
+        {4, 6, _font_G_img_pixels},
+        {4, 6, _font_H_img_pixels},
+        {3, 6, _font_I_img_pixels},
+        {4, 6, _font_J_img_pixels},
+        {4, 6, _font_K_img_pixels},
+        {4, 6, _font_L_img_pixels},
+        {4, 6, _font_M_img_pixels},
+        {4, 6, _font_N_img_pixels},
+        {4, 6, _font_O_img_pixels},
+        {4, 6, _font_P_img_pixels},
+        {4, 6, _font_Q_img_pixels},
+        {4, 6, _font_R_img_pixels},
+        {4, 6, _font_S_img_pixels},
+        {3, 6, _font_T_img_pixels},
+        {4, 6, _font_U_img_pixels},
+        {4, 6, _font_V_img_pixels},
+        {4, 6, _font_W_img_pixels},
+        {4, 6, _font_X_img_pixels},
+        {3, 6, _font_Y_img_pixels},
+        {4, 6, _font_Z_img_pixels},
+};
+static SDL_Texture *_font_texs[ALPHABET_LEN] = {
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL
+};
+
 /* The image for the menu cursor */
 static char _cursor_img_pixels[] = {
         0, 0, 0, 0, 1, 0, 0, 0,
@@ -73,6 +344,15 @@ void die(const char *format, ...) {
 
 /* Clean up any used memory. */
 static void _clean_up(void) {
+        {
+                int i;
+                for (i = 0; i < ALPHABET_LEN; i++) {
+                        if (_font_texs[i]) {
+                                SDL_DestroyTexture(_font_texs[i]);
+                        }
+                }
+        }
+
         if (_cursor_tex) {
                 SDL_DestroyTexture(_cursor_tex);
         }
@@ -106,12 +386,14 @@ static SDL_Texture *_create_texture_from_image(SDL_Renderer *renderer,
                    SDL_PIXELFORMAT_INDEX8);
         if (!surf) {
                 print_error("SDL_CreateRGBSurface: %s\n", SDL_GetError());
+                return NULL;
         }
 
         if (SDL_SetPaletteColors(surf->format->palette, colors, 0, ncolors) < 0) {
                 const char *error = SDL_GetError();
                 SDL_FreeSurface(surf);
                 print_error("SDL_SetPaletteColors: %s\n", error);
+                return NULL;
         }
 
         tex = SDL_CreateTextureFromSurface(renderer, surf);
@@ -119,6 +401,7 @@ static SDL_Texture *_create_texture_from_image(SDL_Renderer *renderer,
                 const char *error = SDL_GetError();
                 SDL_FreeSurface(surf);
                 print_error("SDL_CreateTextureFromSurface: %s\n", error);
+                return NULL;
         }
 
         SDL_FreeSurface(surf);
@@ -175,6 +458,14 @@ int main(int argc, char *argv[]) {
                                                  2,
                                                  &die);
 
+        /* Create the font textures. */
+        {
+                int i;
+                for (i = 0; i < ALPHABET_LEN; i++) {
+                        _font_texs[i] = _create_texture_from_image(_renderer, &_font_imgs[i], colors, 2, &die);
+                }
+        }
+
         /* Loop until the game ends. */
         while (1) {
                 SDL_Event event;
@@ -199,7 +490,33 @@ int main(int argc, char *argv[]) {
                                        0xff, 0xff, 0xff,
                                        SDL_ALPHA_OPAQUE);
                 SDL_RenderClear(_renderer);
-                SDL_RenderCopy(_renderer, _cursor_tex, NULL, NULL);
+                {
+                        int i;
+                        int pen_x = 0;
+                        const char *msg = "SELECTYOURHERITAGEMORTAL";
+                        
+                        for (i = 0; msg[i] != '\0'; i++) {
+                                int j;
+
+                                for (j = 0; _font_alphabet[j] != '\0'; j++) {
+                                        if (_font_alphabet[j] == msg[i]) {
+                                                SDL_Rect rect;
+                                                struct image *image;
+
+                                                image = &_font_imgs[j];
+
+                                                rect.x = pen_x;
+                                                rect.y = 0;
+                                                rect.w = image->width;
+                                                rect.h = image->height;
+
+                                                SDL_RenderCopy(_renderer, _font_texs[j], NULL, &rect);
+                                                pen_x += image->width + 1;
+                                                break;
+                                        }
+                                }
+                        }
+                }
                 SDL_RenderPresent(_renderer);
 
                 /* Delay until the next frame. */
