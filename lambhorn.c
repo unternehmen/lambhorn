@@ -23,7 +23,7 @@
 #include "SDL.h"
 
 /* The title of the game window */
-#define WINDOW_TITLE "thorn"
+#define WINDOW_TITLE "lambhorn"
 /* The width of the game window in pixels */
 #define WINDOW_WIDTH 640
 /* The height of the game window in pixels */
