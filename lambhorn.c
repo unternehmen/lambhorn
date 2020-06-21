@@ -499,12 +499,10 @@ void draw_text(SDL_Renderer *renderer,
 }
 
 int main(int argc, char *argv[]) {
-        enum {
-                MODE_TITLE,
-                MODE_CHOOSE_HERITAGE
-        } mode = MODE_TITLE;
+        struct {
+                int num_options;
+        } title_menu = {2}, heritage_menu = {11}, *current_menu = &title_menu;
         int selection = 0;
-        int num_options = 2;
         SDL_Color colors[2];
 
         USED(argc);
@@ -581,7 +579,7 @@ int main(int argc, char *argv[]) {
                                                 exit(EXIT_SUCCESS);
                                                 break;
                                         case SDL_SCANCODE_DOWN:
-                                                if (selection < num_options - 1) {
+                                                if (selection < current_menu->num_options - 1) {
                                                         selection++;
                                                 }
                                                 break;
@@ -591,19 +589,17 @@ int main(int argc, char *argv[]) {
                                                 }
                                                 break;
                                         case SDL_SCANCODE_SPACE:
-                                                if (mode == MODE_TITLE) {
+                                                if (current_menu == &title_menu) {
                                                         if (selection == 0) {
                                                                 /* New Game */
-                                                                mode = MODE_CHOOSE_HERITAGE;
-                                                                num_options = 11;
+                                                                current_menu = &heritage_menu;
                                                                 selection = 0;
                                                         } else if (selection == 1) {
                                                                 exit(EXIT_SUCCESS);
                                                         }
-                                                } else if (mode == MODE_CHOOSE_HERITAGE) {
+                                                } else if (current_menu == &heritage_menu) {
                                                         if (selection == 10) {
-                                                                mode = MODE_TITLE;
-                                                                num_options = 2;
+                                                                current_menu = &title_menu;
                                                                 selection = 0;
                                                         }
                                                 }
@@ -619,9 +615,9 @@ int main(int argc, char *argv[]) {
                                        0xff, 0xff, 0xff,
                                        SDL_ALPHA_OPAQUE);
                 SDL_RenderClear(_renderer);
-                if (mode == MODE_TITLE) {
+                if (current_menu == &title_menu) {
                         draw_text(_renderer, &_font, 9, 5, "LAMBHORN\n\nNEW GAME\nQUIT");
-                } else if (mode == MODE_CHOOSE_HERITAGE) {
+                } else if (current_menu == &heritage_menu) {
                         draw_text(_renderer, &_font, 9, 5, "CHOOSE YOUR HERITAGE.\n\nACOLITH\nCAPRONS\nDAIMYO\nDELVREN\nFELITH\nFLEUREL\nGRIMFOLK\nLOS\nSUNSTRUCK\nVAAWIE\nCANCEL");
                 }
 
@@ -637,7 +633,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 /* Show heritage descriptions in the heritage menu. */
-                if (mode == MODE_CHOOSE_HERITAGE) {
+                if (current_menu == &heritage_menu) {
                         const char *heritage_descs[] = {
                                 "ACOLITH ARE POINTY EARED IMMORTALS.",
                                 "CAPRONS ARE GOAT HEADED FOLK FROM IM OTRA.",
