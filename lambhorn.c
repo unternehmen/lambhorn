@@ -509,7 +509,10 @@ void draw_text(SDL_Renderer *renderer,
 int main(int argc, char *argv[]) {
         struct {
                 int num_options;
-        } title_menu = {2}, heritage_menu = {11}, *current_menu = &title_menu;
+        } title_menu = {2},
+          heritage_menu = {11},
+          tradition_menu = {4},
+          *current_menu = &title_menu;
         int selection = 0;
         SDL_Color colors[2];
 
@@ -609,6 +612,14 @@ int main(int argc, char *argv[]) {
                                                         if (selection == 10) {
                                                                 current_menu = &title_menu;
                                                                 selection = 0;
+                                                        } else {
+                                                                current_menu = &tradition_menu;
+                                                                selection = 0;
+                                                        }
+                                                } else if (current_menu == &tradition_menu) {
+                                                        if (selection == 3) {
+                                                                current_menu = &heritage_menu;
+                                                                selection = 0;
                                                         }
                                                 }
                                                 break;
@@ -627,6 +638,8 @@ int main(int argc, char *argv[]) {
                         draw_text(_renderer, &_font, 9, 5, "LAMBHORN\n\nNEW GAME\nQUIT");
                 } else if (current_menu == &heritage_menu) {
                         draw_text(_renderer, &_font, 9, 5, "CHOOSE YOUR HERITAGE.\n\nACOLITH\nCAPRONS\nDAIMYO\nDELVREN\nFELITH\nFLEUREL\nGRIMFOLK\nLOS\nSUNSTRUCK\nVAAWIE\nCANCEL");
+                } else if (current_menu == &tradition_menu) {
+                        draw_text(_renderer, &_font, 9, 5, "CHOOSE YOUR TRADITION.\n\nBIRANE\nSCEVIMRIC\nVERONIS\nCANCEL");
                 }
 
                 {
@@ -657,6 +670,16 @@ int main(int argc, char *argv[]) {
 
                         if (selection >= 0 && selection < 10) {
                                 draw_text(_renderer, &_font, 100, (_font.height + 1) * 2 + 5, heritage_descs[selection]);
+                        }
+                } else if (current_menu == &tradition_menu) {
+                        const char *tradition_descs[] = {
+                                "THE PEOPLE OF BIRANE ARE BOUND TO A RELIGIOUS ORDER\nFROM THE ANCIENT PAST.",
+                                "SCEVIMRIC PEOPLE FOLLOW CUSTOMS OF SCEVIMR.",
+                                "THE PEOPLE OF VERONIS ADHERE TO FOLK BELIEFS OF ANOTHER WORLD."
+                        };
+
+                        if (selection >= 0 && selection < 3) {
+                                draw_text(_renderer, &_font, 100, (_font.height + 1) * 2 + 5, tradition_descs[selection]);
                         }
                 }
 
