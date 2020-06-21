@@ -499,7 +499,12 @@ void draw_text(SDL_Renderer *renderer,
 }
 
 int main(int argc, char *argv[]) {
+        enum {
+                MODE_TITLE,
+                MODE_CHOOSE_HERITAGE
+        } mode = MODE_TITLE;
         int selection = 0;
+        int num_options = 2;
         SDL_Color colors[2];
 
         USED(argc);
@@ -576,7 +581,7 @@ int main(int argc, char *argv[]) {
                                                 exit(EXIT_SUCCESS);
                                                 break;
                                         case SDL_SCANCODE_DOWN:
-                                                if (selection < 1) {
+                                                if (selection < num_options - 1) {
                                                         selection++;
                                                 }
                                                 break;
@@ -586,10 +591,21 @@ int main(int argc, char *argv[]) {
                                                 }
                                                 break;
                                         case SDL_SCANCODE_SPACE:
-                                                if (selection == 0) {
-                                                        /* New Game */
-                                                } else if (selection == 1) {
-                                                        exit(EXIT_SUCCESS);
+                                                if (mode == MODE_TITLE) {
+                                                        if (selection == 0) {
+                                                                /* New Game */
+                                                                mode = MODE_CHOOSE_HERITAGE;
+                                                                num_options = 11;
+                                                                selection = 0;
+                                                        } else if (selection == 1) {
+                                                                exit(EXIT_SUCCESS);
+                                                        }
+                                                } else if (mode == MODE_CHOOSE_HERITAGE) {
+                                                        if (selection == 10) {
+                                                                mode = MODE_TITLE;
+                                                                num_options = 2;
+                                                                selection = 0;
+                                                        }
                                                 }
                                                 break;
                                         default:
@@ -603,7 +619,11 @@ int main(int argc, char *argv[]) {
                                        0xff, 0xff, 0xff,
                                        SDL_ALPHA_OPAQUE);
                 SDL_RenderClear(_renderer);
-                draw_text(_renderer, &_font, 9, 5, "LAMBHORN\n\nNEW GAME\nQUIT");
+                if (mode == MODE_TITLE) {
+                        draw_text(_renderer, &_font, 9, 5, "LAMBHORN\n\nNEW GAME\nQUIT");
+                } else if (mode == MODE_CHOOSE_HERITAGE) {
+                        draw_text(_renderer, &_font, 9, 5, "CHOOSE YOUR HERITAGE.\n\nACOLITH\nCAPRONS\nDAIMYO\nDELVREN\nFELITH\nFLEUREL\nGRIMFOLK\nLOS\nSUNSTRUCK\nVAAWIE\nCANCEL");
+                }
 
                 {
                         SDL_Rect rect;
@@ -614,6 +634,26 @@ int main(int argc, char *argv[]) {
                         rect.h = 8;
 
                         SDL_RenderCopy(_renderer, _cursor_tex, NULL, &rect);
+                }
+
+                /* Show heritage descriptions in the heritage menu. */
+                if (mode == MODE_CHOOSE_HERITAGE) {
+                        const char *heritage_descs[] = {
+                                "ACOLITH ARE POINTY EARED IMMORTALS.",
+                                "CAPRONS ARE GOAT HEADED FOLK FROM IM OTRA.",
+                                "DAIMYO ARE OGRE DEMONS OF MYSTERIOUS ORIGIN.",
+                                "DELVREN ARE MOLE HEADED UNDERGROUNDERS.",
+                                "FELITH ARE MORTAL ACOLITHS.",
+                                "FLEUREL ARE FLOWER FOLK FROM PUPPETWOOD.",
+                                "GRIMFOLK ARE SUNSTRUCK WHO ESCAPED SEB.",
+                                "LOS ARE ANTHRO CANINES FROM THE SMITED PLAINS.",
+                                "SUNSTRUCK ARE HUMANS AS WE KNOW THEM.",
+                                "VAAWIE ARE REPTILIANS FROM THE RAINBOW COAST."
+                        };
+
+                        if (selection >= 0 && selection < 10) {
+                                draw_text(_renderer, &_font, 100, (_font.height + 1) * 2 + 5, heritage_descs[selection]);
+                        }
                 }
 
                 SDL_RenderPresent(_renderer);
