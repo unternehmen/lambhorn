@@ -311,6 +311,15 @@ static char _font_comma_img_pixels[] = {
         1, 0,
 };
 
+static char _font_space_img_pixels[] = {
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+};
+
 static struct image _font_imgs[] = {
         {4, 6, _font_A_img_pixels},
         {4, 6, _font_B_img_pixels},
@@ -340,22 +349,23 @@ static struct image _font_imgs[] = {
         {4, 6, _font_Z_img_pixels},
         {3, 6, _font_interrog_img_pixels},
         {1, 6, _font_period_img_pixels},
-        {2, 6, _font_comma_img_pixels}
+        {2, 6, _font_comma_img_pixels},
+        {3, 6, _font_space_img_pixels}
 };
 static SDL_Texture *_font_texs[] = {
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL, NULL, NULL
+        NULL, NULL, NULL, NULL, NULL, NULL
 };
 
 /* The main game font */
 static struct font _font = {
-        29,                              /* alphabet_len */
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?.,", /* alphabet */
-        _font_imgs,                      /* images */
-        _font_texs,                      /* textures */
-        0                                /* height (computed at run-time) */
+        30,                               /* alphabet_len */
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?., ", /* alphabet */
+        _font_imgs,                       /* images */
+        _font_texs,                       /* textures */
+        0                                 /* height (computed at run-time) */
 };
 
 /* The image for the menu cursor */
@@ -471,9 +481,7 @@ void draw_text(SDL_Renderer *renderer,
         for (i = 0; text[i] != '\0'; i++) {
                 int j;
 
-                if (text[i] == ' ') {
-                        pen_x += 4;
-                } else if (text[i] == '\n') {
+                if (text[i] == '\n') {
                         pen_x = start_x;
                         pen_y += font->height + 1;
                 } else {
