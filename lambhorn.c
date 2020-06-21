@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "SDL.h"
+#include "SDL_image.h"
 
 /* Mark a variable as being used. */
 #define USED(x) ((void)(x))
@@ -43,328 +44,51 @@ struct image {
 struct font {
         int alphabet_len;
         const char *alphabet;
-        struct image *images;
-        SDL_Texture **textures;
+        SDL_Texture *texture;
+        SDL_Rect *clips;
         int height;
 };
 
-/* The main font's bitmaps */
-
-static char _font_A_img_pixels[] = {
-        0, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 1, 1, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1
-};
-
-static char _font_B_img_pixels[] = {
-        1, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 1, 1, 0
-};
-
-static char _font_C_img_pixels[] = {
-        0, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 1,
-        0, 1, 1, 0
-};
-
-static char _font_D_img_pixels[] = {
-        1, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 1, 1, 0
-};
-
-static char _font_E_img_pixels[] = {
-        1, 1, 1, 1,
-        1, 0, 0, 0,
-        1, 1, 1, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 0,
-        1, 1, 1, 1
-};
-
-static char _font_F_img_pixels[] = {
-        1, 1, 1, 1,
-        1, 0, 0, 0,
-        1, 1, 1, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 0
-};
-
-static char _font_G_img_pixels[] = {
-        0, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 0,
-        1, 0, 1, 1,
-        1, 0, 0, 1,
-        0, 1, 1, 0
-};
-
-static char _font_H_img_pixels[] = {
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 1, 1, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1
-};
-
-static char _font_I_img_pixels[] = {
-        1, 1, 1,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-        1, 1, 1
-};
-
-static char _font_J_img_pixels[] = {
-        1, 1, 1, 1,
-        0, 0, 0, 1,
-        0, 0, 0, 1,
-        0, 0, 0, 1,
-        1, 0, 0, 1,
-        0, 1, 1, 0
-};
-
-static char _font_K_img_pixels[] = {
-        1, 0, 0, 1,
-        1, 0, 1, 0,
-        1, 1, 0, 0,
-        1, 1, 0, 0,
-        1, 0, 1, 0,
-        1, 0, 0, 1
-};
-
-static char _font_L_img_pixels[] = {
-        1, 0, 0, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 0,
-        1, 1, 1, 1
-};
-
-static char _font_M_img_pixels[] = {
-        1, 1, 0, 1, 0,
-        1, 0, 1, 0, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 0, 0, 1
-};
-
-static char _font_N_img_pixels[] = {
-        1, 1, 0, 1,
-        1, 0, 1, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1
-};
-
-static char _font_O_img_pixels[] = {
-        0, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        0, 1, 1, 0
-};
-
-static char _font_P_img_pixels[] = {
-        1, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 1, 1, 0,
-        1, 0, 0, 0,
-        1, 0, 0, 0
-};
-
-static char _font_Q_img_pixels[] = {
-        0, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        0, 1, 1, 0,
-        0, 0, 0, 1
-};
-
-static char _font_R_img_pixels[] = {
-        1, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1
-};
-
-static char _font_S_img_pixels[] = {
-        0, 1, 1, 0,
-        1, 0, 0, 1,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        1, 0, 0, 1,
-        0, 1, 1, 0
-};
-
-static char _font_T_img_pixels[] = {
-        1, 1, 1,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-};
-
-static char _font_U_img_pixels[] = {
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        0, 1, 1, 0
-};
-
-static char _font_V_img_pixels[] = {
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        0, 1, 0, 1,
-        0, 0, 1, 1,
-        0, 0, 0, 1
-};
-
-static char _font_W_img_pixels[] = {
-        1, 0, 0, 0, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 1, 0, 1,
-        0, 1, 0, 1, 0
-};
-
-static char _font_X_img_pixels[] = {
-        1, 0, 0, 1,
-        1, 0, 0, 1,
-        0, 1, 1, 0,
-        0, 1, 1, 0,
-        1, 0, 0, 1,
-        1, 0, 0, 1
-};
-
-static char _font_Y_img_pixels[] = {
-        1, 0, 1,
-        1, 0, 1,
-        1, 0, 1,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0
-};
-
-static char _font_Z_img_pixels[] = {
-        1, 1, 1, 1,
-        0, 0, 0, 1,
-        0, 0, 1, 0,
-        0, 1, 0, 0,
-        1, 0, 0, 0,
-        1, 1, 1, 1
-};
-
-static char _font_interrog_img_pixels[] = {
-        1, 1, 0,
-        0, 0, 1,
-        0, 1, 0,
-        0, 1, 0,
-        0, 0, 0,
-        0, 1, 0
-};
-
-static char _font_period_img_pixels[] = {
-        0,
-        0,
-        0,
-        0,
-        0,
-        1
-};
-
-static char _font_comma_img_pixels[] = {
-        0, 0,
-        0, 0,
-        0, 0,
-        0, 0,
-        0, 1,
-        1, 0,
-};
-
-static char _font_space_img_pixels[] = {
-        0, 0, 0,
-        0, 0, 0,
-        0, 0, 0,
-        0, 0, 0,
-        0, 0, 0,
-        0, 0, 0,
-};
-
-static struct image _font_imgs[] = {
-        {4, 6, _font_A_img_pixels},
-        {4, 6, _font_B_img_pixels},
-        {4, 6, _font_C_img_pixels},
-        {4, 6, _font_D_img_pixels},
-        {4, 6, _font_E_img_pixels},
-        {4, 6, _font_F_img_pixels},
-        {4, 6, _font_G_img_pixels},
-        {4, 6, _font_H_img_pixels},
-        {3, 6, _font_I_img_pixels},
-        {4, 6, _font_J_img_pixels},
-        {4, 6, _font_K_img_pixels},
-        {4, 6, _font_L_img_pixels},
-        {5, 6, _font_M_img_pixels},
-        {4, 6, _font_N_img_pixels},
-        {4, 6, _font_O_img_pixels},
-        {4, 6, _font_P_img_pixels},
-        {4, 6, _font_Q_img_pixels},
-        {4, 6, _font_R_img_pixels},
-        {4, 6, _font_S_img_pixels},
-        {3, 6, _font_T_img_pixels},
-        {4, 6, _font_U_img_pixels},
-        {4, 6, _font_V_img_pixels},
-        {5, 6, _font_W_img_pixels},
-        {4, 6, _font_X_img_pixels},
-        {3, 6, _font_Y_img_pixels},
-        {4, 6, _font_Z_img_pixels},
-        {3, 6, _font_interrog_img_pixels},
-        {1, 6, _font_period_img_pixels},
-        {2, 6, _font_comma_img_pixels},
-        {3, 6, _font_space_img_pixels}
-};
-static SDL_Texture *_font_texs[] = {
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL, NULL, NULL, NULL
+/* The clips for each letter in the font (computed at run-time) */
+static SDL_Rect _font_clips[] = {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0}
 };
 
 /* The main game font */
 static struct font _font = {
         30,                               /* alphabet_len */
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?., ", /* alphabet */
-        _font_imgs,                       /* images */
-        _font_texs,                       /* textures */
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?.,", /* alphabet */
+        NULL,                             /* texture (loaded at run-time) */
+        _font_clips,                      /* clips */
         0                                 /* height (computed at run-time) */
 };
 
@@ -402,13 +126,8 @@ void die(const char *format, ...) {
 
 /* Clean up any used memory. */
 static void _clean_up(void) {
-        {
-                int i;
-                for (i = 0; i < _font.alphabet_len; i++) {
-                        if (_font_texs[i]) {
-                                SDL_DestroyTexture(_font_texs[i]);
-                        }
-                }
+        if (_font.texture) {
+                SDL_DestroyTexture(_font.texture);
         }
 
         if (_cursor_tex) {
@@ -484,21 +203,23 @@ void draw_text(SDL_Renderer *renderer,
                 if (text[i] == '\n') {
                         pen_x = start_x;
                         pen_y += font->height + 1;
+                } else if (text[i] == ' ') {
+                        pen_x += 4;
                 } else {
                         for (j = 0; font->alphabet[j] != '\0'; j++) {
                                 if (font->alphabet[j] == text[i]) {
                                         SDL_Rect rect;
-                                        struct image *image;
+                                        SDL_Rect *clip;
 
-                                        image = &font->images[j];
+                                        clip = &font->clips[j];
 
                                         rect.x = pen_x;
                                         rect.y = pen_y;
-                                        rect.w = image->width;
-                                        rect.h = image->height;
+                                        rect.w = clip->w;
+                                        rect.h = clip->h;
 
-                                        SDL_RenderCopy(renderer, font->textures[j], NULL, &rect);
-                                        pen_x += image->width + 1;
+                                        SDL_RenderCopy(renderer, font->texture, clip, &rect);
+                                        pen_x += clip->w + 1;
                                         break;
                                 }
                         }
@@ -524,6 +245,12 @@ int main(int argc, char *argv[]) {
                 die("SDL_Init: %s\n", SDL_GetError());
         }
         atexit(&SDL_Quit);
+
+        /* Initialize the image loader. */
+        if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
+                die("IMG_Init: %s\n", IMG_GetError());
+        }
+        atexit(&IMG_Quit);
 
         /* Set up an exit handler to free any used memory. */
         atexit(&_clean_up);
@@ -562,18 +289,81 @@ int main(int argc, char *argv[]) {
                                                  2,
                                                  &die);
 
-        /* Create the font textures. */
+        /* Load the font texture. */
         {
-                int i;
-                for (i = 0; i < _font.alphabet_len; i++) {
-                        struct image *image = &_font_imgs[i];
+                SDL_Surface *surf;
+                SDL_Texture *tex;
 
-                        if (image->height > _font.height) {
-                                _font.height = image->height;
-                        }
-
-                        _font_texs[i] = _create_texture_from_image(_renderer, image, colors, 2, &die);
+                surf = IMG_Load("data/images/font.png");
+                if (!surf) {
+                        die("IMG_Load: %s\n", IMG_GetError());
                 }
+
+                tex = SDL_CreateTextureFromSurface(_renderer, surf);
+                if (!tex) {
+                        const char *error = SDL_GetError();
+                        SDL_FreeSurface(surf);
+                        die("SDL_CreateTextureFromSurface: %s\n", error);
+                }
+
+                /* Determine the clips for each letter. */
+                {
+                        int i;
+                        int x;
+
+                        x = 0;
+                        for (i = 0; i < _font.alphabet_len; i++) {
+                                int j;
+
+                                _font.clips[i].x = x;
+                                _font.clips[i].y = 0;
+
+                                _font.clips[i].w = 0;
+                                for (j = x; j < surf->w; j++) {
+                                        int k;
+                                        int is_blank_column = 1;
+
+                                        for (k = 0; k < surf->h; k++) {
+                                                int locked = 0;
+
+                                                if (SDL_MUSTLOCK(surf)) {
+                                                        SDL_LockSurface(surf);
+                                                        locked = 1;
+                                                }
+
+                                                if (((char*)surf->pixels)[surf->pitch * k + j] == 0) {
+                                                        is_blank_column = 0;
+                                                        break;
+                                                }
+
+                                                if (locked) {
+                                                        SDL_UnlockSurface(surf);
+                                                        locked = 0;
+                                                }
+                                        }
+
+                                        if (is_blank_column) {
+                                                _font.clips[i].w = j - x;
+                                                x = j + 1;
+                                                break;
+                                        }
+                                }
+
+                                _font.clips[i].h = surf->h;
+                                printf("{%d, %d, %d, %d}\n",
+                                       _font.clips[i].x,
+                                       _font.clips[i].y,
+                                       _font.clips[i].w,
+                                       _font.clips[i].h);
+                        }
+                }
+
+                /* Store the font's height. */
+                _font.height = surf->h;
+                SDL_FreeSurface(surf);
+
+                /* Store the font's texture. */
+                _font.texture = tex;
         }
 
         /* Loop until the game ends. */
