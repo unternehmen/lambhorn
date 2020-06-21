@@ -499,6 +499,7 @@ void draw_text(SDL_Renderer *renderer,
 }
 
 int main(int argc, char *argv[]) {
+        int selection = 0;
         SDL_Color colors[2];
 
         USED(argc);
@@ -574,6 +575,23 @@ int main(int argc, char *argv[]) {
                                         case SDL_SCANCODE_ESCAPE:
                                                 exit(EXIT_SUCCESS);
                                                 break;
+                                        case SDL_SCANCODE_DOWN:
+                                                if (selection < 1) {
+                                                        selection++;
+                                                }
+                                                break;
+                                        case SDL_SCANCODE_UP:
+                                                if (selection > 0) {
+                                                        selection--;
+                                                }
+                                                break;
+                                        case SDL_SCANCODE_SPACE:
+                                                if (selection == 0) {
+                                                        /* New Game */
+                                                } else if (selection == 1) {
+                                                        exit(EXIT_SUCCESS);
+                                                }
+                                                break;
                                         default:
                                                 break;
                                 }
@@ -585,7 +603,19 @@ int main(int argc, char *argv[]) {
                                        0xff, 0xff, 0xff,
                                        SDL_ALPHA_OPAQUE);
                 SDL_RenderClear(_renderer);
-                draw_text(_renderer, &_font, 5, 5, "THE QUICK, BROWN FOX\nJUMPS OVER THE LAZY DOG.");
+                draw_text(_renderer, &_font, 9, 5, "LAMBHORN\n\nNEW GAME\nQUIT");
+
+                {
+                        SDL_Rect rect;
+
+                        rect.x = 0;
+                        rect.y = 5 - ((8 - _font.height) / 2) + ((_font.height + 1) * (2 + selection));
+                        rect.w = 8;
+                        rect.h = 8;
+
+                        SDL_RenderCopy(_renderer, _cursor_tex, NULL, &rect);
+                }
+
                 SDL_RenderPresent(_renderer);
 
                 /* Delay until the next frame. */
