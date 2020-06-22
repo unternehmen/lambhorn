@@ -42,7 +42,6 @@ struct image {
 
 /* Fonts contain the data needed for drawing text */
 struct font {
-        int alphabet_len;
         const char *alphabet;
         SDL_Texture *texture;
         SDL_Rect *clips;
@@ -81,13 +80,40 @@ static SDL_Rect _font_clips[] = {
         {0, 0, 0, 0},
         {0, 0, 0, 0},
         {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
         {0, 0, 0, 0}
 };
 
 /* The main game font */
 static struct font _font = {
-        31,                               /* alphabet_len */
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?., ", /* alphabet */
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?., "
+        "abcdefghijklmnopqrstuvwxyz!",    /* alphabet */
         NULL,                             /* texture (loaded at run-time) */
         _font_clips,                      /* clips */
         0                                 /* height (computed at run-time) */
@@ -311,7 +337,7 @@ int main(int argc, char *argv[]) {
                         int x;
 
                         x = 1;
-                        for (i = 0; i < _font.alphabet_len; i++) {
+                        for (i = 0; _font.alphabet[i] != '\0'; i++) {
                                 int j;
 
                                 _font.clips[i].x = x;
@@ -419,11 +445,11 @@ int main(int argc, char *argv[]) {
                                        SDL_ALPHA_OPAQUE);
                 SDL_RenderClear(_renderer);
                 if (current_menu == &title_menu) {
-                        draw_text(_renderer, &_font, 9, 5, "LAMBHORN\n\nNEW GAME\nQUIT");
+                        draw_text(_renderer, &_font, 9, 5, "Lambhorn\n\nNew Game\nQuit");
                 } else if (current_menu == &heritage_menu) {
-                        draw_text(_renderer, &_font, 9, 5, "CHOOSE YOUR HERITAGE.\n\nACOLITH\nCAPRONS\nDAIMYO\nDELVREN\nFELITH\nFLEUREL\nGRIMFOLK\nLOS\nSUNSTRUCK\nVAAWIE\nCANCEL");
+                        draw_text(_renderer, &_font, 9, 5, "Choose your heritage.\n\nAcolith\nCaprons\nDaimyo\nDelvren\nFelith\nFleurel\nGrimfol\nLos\nSunstruck\nVaawie\nCancel");
                 } else if (current_menu == &tradition_menu) {
-                        draw_text(_renderer, &_font, 9, 5, "CHOOSE YOUR TRADITION.\n\nBIRANE\nSCEVIMRIC\nVERONIS\nCANCEL");
+                        draw_text(_renderer, &_font, 9, 5, "Choose your tradition.\n\nBirane\nScevimric\nVeronis\nCancel");
                 }
 
                 {
@@ -440,16 +466,16 @@ int main(int argc, char *argv[]) {
                 /* Show heritage descriptions in the heritage menu. */
                 if (current_menu == &heritage_menu) {
                         const char *heritage_descs[] = {
-                                "ACOLITH ARE POINTY EARED IMMORTALS.",
-                                "CAPRONS ARE GOAT HEADED FOLK FROM IM OTRA.",
-                                "DAIMYO ARE OGRE DEMONS OF MYSTERIOUS ORIGIN.",
-                                "DELVREN ARE MOLE HEADED UNDERGROUNDERS.",
-                                "FELITH ARE MORTAL ACOLITHS.",
-                                "FLEUREL ARE FLOWER FOLK FROM PUPPETWOOD.",
-                                "GRIMFOLK ARE SUNSTRUCK WHO ESCAPED SEB.",
-                                "LOS ARE ANTHRO CANINES FROM THE SMITED PLAINS.",
-                                "SUNSTRUCK ARE HUMANS AS WE KNOW THEM.",
-                                "VAAWIE ARE REPTILIANS FROM THE RAINBOW COAST."
+                                "Acolith are pointy eared immortals.",
+                                "Caprons are goat headed folk from Im Otra.",
+                                "Daimyo are ogre demons of mysterious origin.",
+                                "Delvren are mole headed undergrounders.",
+                                "Felith are mortal Acoliths.",
+                                "Fleurel are flower folk from Puppetwood.",
+                                "Grimfolk are Sunstruck who escaped from Seb.",
+                                "Los are anthro canines from the Smited Plains.",
+                                "Sunstruck are humans as we know them.",
+                                "Vaawie are reptilians from the Rainbow Coast."
                         };
 
                         if (selection >= 0 && selection < 10) {
@@ -457,9 +483,9 @@ int main(int argc, char *argv[]) {
                         }
                 } else if (current_menu == &tradition_menu) {
                         const char *tradition_descs[] = {
-                                "THE PEOPLE OF BIRANE ARE BOUND TO A RELIGIOUS ORDER\nFROM THE ANCIENT PAST.",
-                                "SCEVIMRIC PEOPLE FOLLOW CUSTOMS OF SCEVIMR.",
-                                "THE PEOPLE OF VERONIS ADHERE TO FOLK BELIEFS OF ANOTHER WORLD."
+                                "The Birane cult follows an ancient code of battle.",
+                                "Scevimr people obey the orders of a far off emporer.",
+                                "The people of Veronis believe in folk myths of another world."
                         };
 
                         if (selection >= 0 && selection < 3) {
