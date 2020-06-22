@@ -196,6 +196,89 @@ void draw_text(SDL_Renderer *renderer,
         }
 }
 
+/* Load a texture from a file. */
+SDL_Texture *load_texture_and_handle_surface(
+                SDL_Renderer *renderer,
+                const char *path,
+                void (*surface_handler)(SDL_Surface*, void*),
+                void *data,
+                void (*print_error)(const char*, ...)) {
+        SDL_Surface *surf;
+        SDL_Texture *tex;
+
+        surf = IMG_Load(path);
+        if (!surf) {
+                print_error("IMG_Load: %s\n", IMG_GetError());
+                return NULL;
+        }
+
+        tex = SDL_CreateTextureFromSurface(renderer, surf);
+        if (!tex) {
+                const char *error = SDL_GetError();
+                SDL_FreeSurface(surf);
+                print_error("SDL_CreateTextureFromSurface: %s\n", error);
+                return NULL;
+        }
+
+        surface_handler(surf, data);
+        SDL_FreeSurface(surf);
+
+        return tex;
+}
+
+/* Get sprite dimensions from a surface. */
+void get_sprite_dims_from_surface(SDL_Surface *surf, void *sprite_ptr) {
+        struct sprite *sprite = sprite_ptr;
+
+        sprite->width = surf->w;
+        sprite->height = surf->h;
+}
+
+/* Get font information (clips & height) from a surface. */
+void get_font_info_from_surface(SDL_Surface *surf, void *font_ptr) {
+        struct font *font = font_ptr;
+        int i;
+        int x;
+
+        x = 1;
+        for (i = 0; font->alphabet[i] != '\0'; i++) {
+                int j;
+
+                font->clips[i].x = x;
+                font->clips[i].y = 0;
+
+                font->clips[i].w = 0;
+                for (j = x; j < surf->w; j++) {
+                        char *pixels_bytes;
+                        int locked = 0;
+                        int is_divider = 0;
+
+                        if (SDL_MUSTLOCK(surf)) {
+                                SDL_LockSurface(surf);
+                                locked = 1;
+                        }
+
+                        pixels_bytes = surf->pixels;
+                        is_divider = (pixels_bytes[surf->pitch * (surf->h - 1) + j]
+                                      == pixels_bytes[surf->pitch * (surf->h - 1)]);
+
+                        if (locked) {
+                                SDL_UnlockSurface(surf);
+                        }
+
+                        if (is_divider) {
+                                font->clips[i].w = j - x;
+                                x = j + 1;
+                                break;
+                        }
+                }
+
+                font->clips[i].h = surf->h - 1;
+        }
+
+        font->height = surf->h;
+}
+
 int main(int argc, char *argv[]) {
         struct {
                 int num_options;
@@ -240,98 +323,20 @@ int main(int argc, char *argv[]) {
                 die("SDL_CreateRenderer: %s\n", SDL_GetError());
         }
 
-        /* Create the cursor texture. */
-        {
-                SDL_Surface *surf;
-                SDL_Texture *tex;
-
-                surf = IMG_Load("data/images/cursor.png");
-                if (!surf) {
-                        die("IMG_Load: %s\n", IMG_GetError());
-                }
-
-                tex = SDL_CreateTextureFromSurface(_renderer, surf);
-                if (!tex) {
-                        const char *error = SDL_GetError();
-                        SDL_FreeSurface(surf);
-                        die("SDL_CreateTextureFromSurface: %s\n", error);
-                }
-
-                _cursor_sprite.width = surf->w;
-                _cursor_sprite.height = surf->h;
-
-                SDL_FreeSurface(surf);
-
-                _cursor_sprite.texture = tex;
-        }
 
 
-        /* Load the font texture. */
-        {
-                SDL_Surface *surf;
-                SDL_Texture *tex;
-
-                surf = IMG_Load("data/images/font.png");
-                if (!surf) {
-                        die("IMG_Load: %s\n", IMG_GetError());
-                }
-
-                tex = SDL_CreateTextureFromSurface(_renderer, surf);
-                if (!tex) {
-                        const char *error = SDL_GetError();
-                        SDL_FreeSurface(surf);
-                        die("SDL_CreateTextureFromSurface: %s\n", error);
-                }
-
-                /* Determine the clips for each letter. */
-                {
-                        int i;
-                        int x;
-
-                        x = 1;
-                        for (i = 0; _font.alphabet[i] != '\0'; i++) {
-                                int j;
-
-                                _font.clips[i].x = x;
-                                _font.clips[i].y = 0;
-
-                                _font.clips[i].w = 0;
-                                for (j = x; j < surf->w; j++) {
-                                        char *pixels_bytes;
-                                        int locked = 0;
-                                        int is_divider = 0;
-
-                                        if (SDL_MUSTLOCK(surf)) {
-                                                SDL_LockSurface(surf);
-                                                locked = 1;
-                                        }
-
-                                        pixels_bytes = surf->pixels;
-                                        is_divider = (pixels_bytes[surf->pitch * (surf->h - 1) + j]
-                                                      == pixels_bytes[surf->pitch * (surf->h - 1)]);
-
-                                        if (locked) {
-                                                SDL_UnlockSurface(surf);
-                                        }
-
-                                        if (is_divider) {
-                                                _font.clips[i].w = j - x;
-                                                x = j + 1;
-                                                break;
-                                        }
-                                }
-
-                                _font.clips[i].h = surf->h - 1;
-                        }
-                }
-
-                /* Store the font's height. */
-                _font.height = surf->h;
-                SDL_FreeSurface(surf);
-
-                /* Store the font's texture. */
-                _font.texture = tex;
-        }
+        _cursor_sprite.texture = load_texture_and_handle_surface(
+            _renderer,
+            "data/images/cursor.png",
+            &get_sprite_dims_from_surface,
+            &_cursor_sprite,
+            &die);
+        _font.texture = load_texture_and_handle_surface(
+            _renderer,
+            "data/images/font.png",
+            &get_font_info_from_surface,
+            &_font,
+            &die);
 
         /* Loop until the game ends. */
         while (1) {
