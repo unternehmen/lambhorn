@@ -323,7 +323,8 @@ int main(int argc, char *argv[]) {
         static const char *tradition_descriptions[] = {
                 "The Birane cult follows an ancient code of battle.",
                 "Scevimr people obey the orders of a far off emporer.",
-                "The people of Veronis believe in folk myths of another world."
+                "The people of Veronis believe in folk myths of another world.",
+                "Return to previous menu."
         };
         struct {
                 const char *prompt;
