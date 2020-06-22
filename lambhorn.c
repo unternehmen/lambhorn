@@ -370,11 +370,6 @@ int main(int argc, char *argv[]) {
                                 }
 
                                 _font.clips[i].h = surf->h - 1;
-                                printf("{%d, %d, %d, %d}\n",
-                                       _font.clips[i].x,
-                                       _font.clips[i].y,
-                                       _font.clips[i].w,
-                                       _font.clips[i].h);
                         }
                 }
 
