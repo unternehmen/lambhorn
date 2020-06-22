@@ -80,13 +80,14 @@ static SDL_Rect _font_clips[] = {
         {0, 0, 0, 0},
         {0, 0, 0, 0},
         {0, 0, 0, 0},
+        {0, 0, 0, 0},
         {0, 0, 0, 0}
 };
 
 /* The main game font */
 static struct font _font = {
-        30,                               /* alphabet_len */
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?.,", /* alphabet */
+        31,                               /* alphabet_len */
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?., ", /* alphabet */
         NULL,                             /* texture (loaded at run-time) */
         _font_clips,                      /* clips */
         0                                 /* height (computed at run-time) */
@@ -203,8 +204,6 @@ void draw_text(SDL_Renderer *renderer,
                 if (text[i] == '\n') {
                         pen_x = start_x;
                         pen_y += font->height + 1;
-                } else if (text[i] == ' ') {
-                        pen_x += 4;
                 } else {
                         for (j = 0; font->alphabet[j] != '\0'; j++) {
                                 if (font->alphabet[j] == text[i]) {
@@ -311,7 +310,7 @@ int main(int argc, char *argv[]) {
                         int i;
                         int x;
 
-                        x = 0;
+                        x = 1;
                         for (i = 0; i < _font.alphabet_len; i++) {
                                 int j;
 
@@ -320,36 +319,31 @@ int main(int argc, char *argv[]) {
 
                                 _font.clips[i].w = 0;
                                 for (j = x; j < surf->w; j++) {
-                                        int k;
-                                        int is_blank_column = 1;
+                                        char *pixels_bytes;
+                                        int locked = 0;
+                                        int is_divider = 0;
 
-                                        for (k = 0; k < surf->h; k++) {
-                                                int locked = 0;
-
-                                                if (SDL_MUSTLOCK(surf)) {
-                                                        SDL_LockSurface(surf);
-                                                        locked = 1;
-                                                }
-
-                                                if (((char*)surf->pixels)[surf->pitch * k + j] == 0) {
-                                                        is_blank_column = 0;
-                                                        break;
-                                                }
-
-                                                if (locked) {
-                                                        SDL_UnlockSurface(surf);
-                                                        locked = 0;
-                                                }
+                                        if (SDL_MUSTLOCK(surf)) {
+                                                SDL_LockSurface(surf);
+                                                locked = 1;
                                         }
 
-                                        if (is_blank_column) {
+                                        pixels_bytes = surf->pixels;
+                                        is_divider = (pixels_bytes[surf->pitch * (surf->h - 1) + j]
+                                                      == pixels_bytes[surf->pitch * (surf->h - 1)]);
+
+                                        if (locked) {
+                                                SDL_UnlockSurface(surf);
+                                        }
+
+                                        if (is_divider) {
                                                 _font.clips[i].w = j - x;
                                                 x = j + 1;
                                                 break;
                                         }
                                 }
 
-                                _font.clips[i].h = surf->h;
+                                _font.clips[i].h = surf->h - 1;
                                 printf("{%d, %d, %d, %d}\n",
                                        _font.clips[i].x,
                                        _font.clips[i].y,
