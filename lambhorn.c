@@ -280,11 +280,59 @@ void get_font_info_from_surface(SDL_Surface *surf, void *font_ptr) {
 }
 
 int main(int argc, char *argv[]) {
+        static const char *title_options[] = {
+                "New Game",
+                "Quit"
+        };
+        static const char *title_descriptions[] = {
+                "Begin a new adventure in the land of Lambhorn.",
+                "Quit playing the game."
+        };
+        static const char *heritage_options[] = {
+                "Acolith",
+                "Caprons",
+                "Daimyo",
+                "Delvren",
+                "Felith",
+                "Fleurel",
+                "Grimfolk",
+                "Los",
+                "Sunstruck",
+                "Vaawie",
+                "Cancel"
+        };
+        static const char *heritage_descriptions[] = {
+                "Acolith are pointy eared immortals.",
+                "Caprons are goat headed folk from Im Otra.",
+                "Daimyo are ogre demons of mysterious origin.",
+                "Delvren are mole headed undergrounders.",
+                "Felith are mortal Acoliths.",
+                "Fleurel are flower folk from Puppetwood.",
+                "Grimfolk are Sunstruck who escaped from Seb.",
+                "Los are anthro canines from the Smited Plains.",
+                "Sunstruck are humans as we know them.",
+                "Vaawie are reptilians from the Rainbow Coast.",
+                "Return to the previous menu."
+        };
+        static const char *tradition_options[] = {
+                "Birane",
+                "Scevimric",
+                "Veronis",
+                "Cancel"
+        };
+        static const char *tradition_descriptions[] = {
+                "The Birane cult follows an ancient code of battle.",
+                "Scevimr people obey the orders of a far off emporer.",
+                "The people of Veronis believe in folk myths of another world."
+        };
         struct {
+                const char *prompt;
                 int num_options;
-        } title_menu = {2},
-          heritage_menu = {11},
-          tradition_menu = {4},
+                const char **options;
+                const char **descriptions;
+        } title_menu = {"Lambhorn", 2, title_options, title_descriptions},
+          heritage_menu = {"Choose thine heritage.", 11, heritage_options, heritage_descriptions},
+          tradition_menu = {"Choose thy tradition.", 4, tradition_options, tradition_descriptions},
           *current_menu = &title_menu;
         int selection = 0;
 
@@ -323,14 +371,15 @@ int main(int argc, char *argv[]) {
                 die("SDL_CreateRenderer: %s\n", SDL_GetError());
         }
 
-
-
+        /* Load sprites. */
         _cursor_sprite.texture = load_texture_and_handle_surface(
             _renderer,
             "data/images/cursor.png",
             &get_sprite_dims_from_surface,
             &_cursor_sprite,
             &die);
+
+        /* Load the font. */
         _font.texture = load_texture_and_handle_surface(
             _renderer,
             "data/images/font.png",
@@ -391,19 +440,28 @@ int main(int argc, char *argv[]) {
                         }
                 }
 
-                /* Draw the scene. */
+                /* Clear the screen. */
                 SDL_SetRenderDrawColor(_renderer,
                                        0xff, 0xff, 0xff,
                                        SDL_ALPHA_OPAQUE);
                 SDL_RenderClear(_renderer);
-                if (current_menu == &title_menu) {
-                        draw_text(_renderer, &_font, 9, 5, "Lambhorn\n\nNew Game\nQuit");
-                } else if (current_menu == &heritage_menu) {
-                        draw_text(_renderer, &_font, 9, 5, "Choose your heritage.\n\nAcolith\nCaprons\nDaimyo\nDelvren\nFelith\nFleurel\nGrimfol\nLos\nSunstruck\nVaawie\nCancel");
-                } else if (current_menu == &tradition_menu) {
-                        draw_text(_renderer, &_font, 9, 5, "Choose your tradition.\n\nBirane\nScevimric\nVeronis\nCancel");
+
+                /* Draw the menu prompt. */
+                draw_text(_renderer, &_font, 9, 5, current_menu->prompt);
+
+                /* Draw the options. */
+                {
+                        int i;
+                        for (i = 0; i < current_menu->num_options; i++) {
+                                draw_text(_renderer, &_font, 9, 5 + ((_font.height + 1) * (2 + i)), current_menu->options[i]);
+                        }
                 }
 
+                /* Draw the description of the selected option. */
+                draw_text(_renderer, &_font, 100, (_font.height + 1) * 2 + 5, current_menu->descriptions[selection]);
+
+
+                /* Draw the cursor. */
                 {
                         SDL_Rect rect;
 
@@ -413,36 +471,6 @@ int main(int argc, char *argv[]) {
                         rect.h = _cursor_sprite.height;
 
                         SDL_RenderCopy(_renderer, _cursor_sprite.texture, NULL, &rect);
-                }
-
-                /* Show heritage descriptions in the heritage menu. */
-                if (current_menu == &heritage_menu) {
-                        const char *heritage_descs[] = {
-                                "Acolith are pointy eared immortals.",
-                                "Caprons are goat headed folk from Im Otra.",
-                                "Daimyo are ogre demons of mysterious origin.",
-                                "Delvren are mole headed undergrounders.",
-                                "Felith are mortal Acoliths.",
-                                "Fleurel are flower folk from Puppetwood.",
-                                "Grimfolk are Sunstruck who escaped from Seb.",
-                                "Los are anthro canines from the Smited Plains.",
-                                "Sunstruck are humans as we know them.",
-                                "Vaawie are reptilians from the Rainbow Coast."
-                        };
-
-                        if (selection >= 0 && selection < 10) {
-                                draw_text(_renderer, &_font, 100, (_font.height + 1) * 2 + 5, heritage_descs[selection]);
-                        }
-                } else if (current_menu == &tradition_menu) {
-                        const char *tradition_descs[] = {
-                                "The Birane cult follows an ancient code of battle.",
-                                "Scevimr people obey the orders of a far off emporer.",
-                                "The people of Veronis believe in folk myths of another world."
-                        };
-
-                        if (selection >= 0 && selection < 3) {
-                                draw_text(_renderer, &_font, 100, (_font.height + 1) * 2 + 5, tradition_descs[selection]);
-                        }
                 }
 
                 SDL_RenderPresent(_renderer);
