@@ -1,0 +1,14 @@
+/.deps/
+/autom4te.cache/
+/build-aux/
+aclocal.m4
+config.h.in
+configure
+Makefile.in
+Makefile
+config.h
+config.log
+config.status
+stamp-h1
+lambhorn
+lambhorn.o

@@ -1,0 +1,5 @@
+bin_PROGRAMS = lambhorn
+lambhorn_SOURCES = lambhorn.c
+AM_CPPFLAGS = $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS)
+LDADD = $(SDL_LIBS) $(SDL_IMAGE_LIBS)
+ACLOCAL_AMFLAGS = -I m4
