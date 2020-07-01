@@ -49,74 +49,37 @@ struct sprite {
 };
 
 /* The clips for each letter in the font (computed at run-time) */
+#define FOR_GLYPH(X) \
+        X("A")  X("B")  X("C")  X("D") \
+        X("E")  X("F")  X("G")  X("H") \
+        X("I")  X("J")  X("K")  X("L") \
+        X("M")  X("N")  X("O")  X("P") \
+        X("Q")  X("R")  X("S")  X("T") \
+        X("U")  X("V")  X("W")  X("X") \
+        X("Y")  X("Z")  X("?")  X(".") \
+        X(",")  X(" ")  X("a")  X("b") \
+        X("c")  X("d")  X("e")  X("f") \
+        X("g")  X("h")  X("i")  X("j") \
+        X("k")  X("l")  X("m")  X("n") \
+        X("o")  X("p")  X("q")  X("r") \
+        X("s")  X("t")  X("u")  X("v") \
+        X("w")  X("x")  X("y")  X("z") \
+        X("!")
+
 static SDL_Rect _font_clips[] = {
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0}
+#define OP(glyph) {0, 0, 0, 0},
+        FOR_GLYPH(OP)
+#undef OP
 };
 
 /* The main game font */
 static struct font _font = {
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ?., "
-        "abcdefghijklmnopqrstuvwxyz!",    /* alphabet */
-        NULL,                             /* texture (loaded at run-time) */
-        _font_clips,                      /* clips */
-        0                                 /* height (computed at run-time) */
+#define OP(letter) letter
+        FOR_GLYPH(OP),          /* alphabet */
+#undef OP
+        NULL,                   /* texture (loaded at run-time) */
+        _font_clips,            /* clips (filled at run-time) */
+        0                       /* height (computed at run-time) */
 };
 
 /* The cursor texture */
