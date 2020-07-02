@@ -12,3 +12,9 @@ config.status
 stamp-h1
 lambhorn
 lambhorn.o
+*.o
+*.log
+*.trs
+.dirstamp
+.deps/
+*~
