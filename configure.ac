@@ -16,6 +16,8 @@ AC_PROG_CC
 # Checks for packages.
 AM_PATH_SDL2([2.0.8], [], [AC_MSG_ERROR([[SDL2 >= 2.0.8 is required.]])])
 PKG_CHECK_MODULES([SDL_IMAGE], [SDL2_image])
+PKG_CHECK_MODULES([GL], [gl])
+PKG_CHECK_MODULES([GLU], [glu])
 
 # Checks for typedefs, structures, and compiler characteristics.
 

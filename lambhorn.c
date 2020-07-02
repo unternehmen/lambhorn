@@ -22,6 +22,8 @@
 #include <stdarg.h>
 #include "SDL.h"
 #include "SDL_image.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
 
 /* Mark a variable as being used. */
 #define USED(x) ((void)(x))
@@ -36,14 +38,16 @@
 /* Fonts contain the data needed for drawing text */
 struct font {
         const char *alphabet;
-        SDL_Texture *texture;
+        GLuint texture;
         SDL_Rect *clips;
+        int image_width;
+        int image_height;
         int height;
 };
 
 /* Sprites are combine textures with width and height information. */
 struct sprite {
-        SDL_Texture *texture;
+        GLuint texture;
         int width;
         int height;
 };
@@ -74,21 +78,23 @@ static SDL_Rect _font_clips[] = {
 
 /* The main game font */
 static struct font _font = {
-#define OP(letter) letter
+#define OP(glyph) glyph
         FOR_GLYPH(OP),          /* alphabet */
 #undef OP
-        NULL,                   /* texture (loaded at run-time) */
+        0,                      /* texture (loaded at run-time) */
         _font_clips,            /* clips (filled at run-time) */
+        0,                      /* image_width (loaded at run-time) */
+        0,                      /* image_height (loaded at run-time) */
         0                       /* height (computed at run-time) */
 };
 
 /* The cursor texture */
-static struct sprite _cursor_sprite;
+static struct sprite _cursor_sprite = {0, 0, 0}; /* loaded at run-time */
 
 /* The game window */
 static SDL_Window *_window = NULL;
-/* The renderer for drawing all graphics */
-static SDL_Renderer *_renderer = NULL;
+/* The GL context for drawing all graphics */
+static SDL_GLContext _context = NULL;
 
 /* Abort the program with an error message. */
 void die(const char *format, ...) {
@@ -103,16 +109,16 @@ void die(const char *format, ...) {
 
 /* Clean up any used memory. */
 static void _clean_up(void) {
-        if (_font.texture) {
-                SDL_DestroyTexture(_font.texture);
+        if (glIsTexture(_font.texture)) {
+                glDeleteTextures(1, &_font.texture);
         }
 
-        if (_cursor_sprite.texture) {
-                SDL_DestroyTexture(_cursor_sprite.texture);
+        if (glIsTexture(_cursor_sprite.texture)) {
+                glDeleteTextures(1, &_cursor_sprite.texture);
         }
 
-        if (_renderer) {
-                SDL_DestroyRenderer(_renderer);
+        if (_context) {
+                SDL_GL_DeleteContext(_context);
         }
 
         if (_window) {
@@ -121,8 +127,7 @@ static void _clean_up(void) {
 }
 
 /* Draw text in a certain font at a certain position. */
-void draw_text(SDL_Renderer *renderer,
-               struct font *font,
+void draw_text(struct font *font,
                int start_x,
                int start_y,
                const char *text)
@@ -136,21 +141,38 @@ void draw_text(SDL_Renderer *renderer,
 
                 if (text[i] == '\n') {
                         pen_x = start_x;
-                        pen_y += font->height + 1;
+                        pen_y -= font->height + 1;
                 } else {
                         for (j = 0; font->alphabet[j] != '\0'; j++) {
                                 if (font->alphabet[j] == text[i]) {
-                                        SDL_Rect rect;
                                         SDL_Rect *clip;
 
                                         clip = &font->clips[j];
 
-                                        rect.x = pen_x;
-                                        rect.y = pen_y;
-                                        rect.w = clip->w;
-                                        rect.h = clip->h;
+                                        {
+                                                GLdouble clip_ratios[] = {
+                                                        ((GLdouble)clip->x)
+                                                          / ((GLdouble)font->image_width),
+                                                        ((GLdouble)clip->y)
+                                                          / ((GLdouble)font->image_height),
+                                                        ((GLdouble)clip->x + (GLdouble)clip->w)
+                                                          / ((GLdouble)font->image_width),
+                                                        ((GLdouble)clip->y + (GLdouble)clip->h)
+                                                          / ((GLdouble)font->image_height)
+                                                };
+                                                glBindTexture(GL_TEXTURE_2D, _font.texture);
+                                                glBegin(GL_POLYGON);
+                                                        glTexCoord2d(clip_ratios[0], clip_ratios[1]);
+                                                        glVertex2d(pen_x, pen_y);
+                                                        glTexCoord2d(clip_ratios[0], clip_ratios[3]);
+                                                        glVertex2d(pen_x, pen_y - clip->h);
+                                                        glTexCoord2d(clip_ratios[2], clip_ratios[3]);
+                                                        glVertex2d(pen_x + clip->w, pen_y - clip->h);
+                                                        glTexCoord2d(clip_ratios[2], clip_ratios[1]);
+                                                        glVertex2d(pen_x + clip->w, pen_y);
+                                                glEnd();
+                                        }
 
-                                        SDL_RenderCopy(renderer, font->texture, clip, &rect);
                                         pen_x += clip->w + 1;
                                         break;
                                 }
@@ -158,6 +180,61 @@ void draw_text(SDL_Renderer *renderer,
                 }
         }
 }
+
+/* Load an OpenGL texture from a file. */
+GLuint load_gl_texture_and_handle_surface(
+                const char *path,
+                void (*surface_handler)(SDL_Surface*, void*),
+                void *data,
+                void (*print_error)(const char*, ...)) {
+        SDL_Surface *surf;
+        SDL_Surface *converted;
+        GLuint tex;
+
+        /* Load the image. */
+        surf = IMG_Load(path);
+        if (!surf) {
+                print_error("IMG_Load: %s\n", IMG_GetError());
+                return 0;
+        }
+
+        /* Convert the surface to a format that OpenGL can parse. */
+        converted = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_RGB24, 0);
+        if (!converted) {
+                SDL_FreeSurface(surf);
+                print_error("SDL_ConvertSurfaceFormat: %s\n", SDL_GetError());
+                return 0;
+        }
+
+        /* Turn the texture into an OpenGL texture. */
+        {
+                glGenTextures(1, &tex);
+                glBindTexture(GL_TEXTURE_2D, tex);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexImage2D(GL_TEXTURE_2D,
+                             0,
+                             GL_RGB8,
+                             converted->w,
+                             converted->h,
+                             0,
+                             GL_RGB,
+                             GL_UNSIGNED_BYTE,
+                             converted->pixels);
+        }
+
+        /* Send the surface to the user-supplied surface handler
+         * for extra processing. */
+        surface_handler(surf, data);
+
+        /* Free the surfaces. */
+        SDL_FreeSurface(converted);
+        SDL_FreeSurface(surf);
+
+        /* Return the loaded texture ID. */
+        return tex;
+}
+
 
 /* Load a texture from a file. */
 SDL_Texture *load_texture_and_handle_surface(
@@ -202,6 +279,9 @@ void get_font_info_from_surface(SDL_Surface *surf, void *font_ptr) {
         struct font *font = font_ptr;
         int i;
         int x;
+
+        font->image_width = surf->w;
+        font->image_height = surf->h;
 
         x = 1;
         for (i = 0; font->alphabet[i] != '\0'; i++) {
@@ -324,28 +404,33 @@ int main(int argc, char *argv[]) {
                                    SDL_WINDOWPOS_UNDEFINED,
                                    WINDOW_WIDTH,
                                    WINDOW_HEIGHT,
-                                   0);
+                                   SDL_WINDOW_OPENGL);
         if (!_window) {
                 die("SDL_CreateWindow: %s\n", SDL_GetError());
         }
 
-        /* Create the renderer. */
-        _renderer = SDL_CreateRenderer(_window, -1, 0);
-        if (!_renderer) {
-                die("SDL_CreateRenderer: %s\n", SDL_GetError());
+        _context = SDL_GL_CreateContext(_window);
+        if (!_context) {
+                die("SDL_GL_CreateContext: %s\n", SDL_GetError());
         }
 
-        /* Load sprites. */
-        _cursor_sprite.texture = load_texture_and_handle_surface(
-            _renderer,
+        /* Set up OpenGL. */
+        glShadeModel(GL_FLAT);
+        glViewport(0, 0, (GLsizei)WINDOW_WIDTH, (GLsizei)WINDOW_HEIGHT);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluOrtho2D(0.0f, (GLdouble)WINDOW_WIDTH, 0.0f, (GLdouble)WINDOW_HEIGHT);
+
+        /* Load the cursor texture. */
+        _cursor_sprite.texture = load_gl_texture_and_handle_surface(
             "data/images/cursor.png",
             &get_sprite_dims_from_surface,
             &_cursor_sprite,
             &die);
 
-        /* Load the font. */
-        _font.texture = load_texture_and_handle_surface(
-            _renderer,
+        /* Create the renderer. */
+        _font.texture = load_gl_texture_and_handle_surface(
             "data/images/font.png",
             &get_font_info_from_surface,
             &_font,
@@ -405,39 +490,44 @@ int main(int argc, char *argv[]) {
                 }
 
                 /* Clear the screen. */
-                SDL_SetRenderDrawColor(_renderer,
-                                       0xff, 0xff, 0xff,
-                                       SDL_ALPHA_OPAQUE);
-                SDL_RenderClear(_renderer);
+                glClear(GL_COLOR_BUFFER_BIT);
+
+                /* Enable texturing. */
+                glEnable(GL_TEXTURE_2D);
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
                 /* Draw the menu prompt. */
-                draw_text(_renderer, &_font, 9, 5, current_menu->prompt);
+                draw_text(&_font, 9, WINDOW_HEIGHT - 5, current_menu->prompt);
 
                 /* Draw the options. */
                 {
                         int i;
                         for (i = 0; i < current_menu->num_options; i++) {
-                                draw_text(_renderer, &_font, 9, 5 + ((_font.height + 1) * (2 + i)), current_menu->options[i]);
+                                draw_text(&_font, 9, WINDOW_HEIGHT - (5 + ((_font.height + 1) * (2 + i))), current_menu->options[i]);
                         }
                 }
 
                 /* Draw the description of the selected option. */
-                draw_text(_renderer, &_font, 100, (_font.height + 1) * 2 + 5, current_menu->descriptions[selection]);
+                draw_text(&_font, 100, WINDOW_HEIGHT - (5 + ((_font.height + 1) * 2)), current_menu->descriptions[selection]);
 
 
                 /* Draw the cursor. */
                 {
-                        SDL_Rect rect;
-
-                        rect.x = 0;
-                        rect.y = 5 - ((_cursor_sprite.height - _font.height) / 2) + ((_font.height + 1) * (2 + selection));
-                        rect.w = _cursor_sprite.width;
-                        rect.h = _cursor_sprite.height;
-
-                        SDL_RenderCopy(_renderer, _cursor_sprite.texture, NULL, &rect);
+                        int x = 0;
+                        int y = WINDOW_HEIGHT - (5 - ((_cursor_sprite.height - _font.height) / 2) + ((_font.height + 1) * (2 + selection)));
+                        glBindTexture(GL_TEXTURE_2D, _cursor_sprite.texture);
+                        glBegin(GL_POLYGON);
+                                glTexCoord2i(0, 0); glVertex2d(x, y);
+                                glTexCoord2i(0, 1); glVertex2d(x, y - _cursor_sprite.height);
+                                glTexCoord2i(1, 1); glVertex2d(x + _cursor_sprite.width, y - _cursor_sprite.height);
+                                glTexCoord2i(1, 0); glVertex2d(x + _cursor_sprite.width, y);
+                        glEnd();
                 }
 
-                SDL_RenderPresent(_renderer);
+                glDisable(GL_TEXTURE_2D);
+                glFlush();
+
+                SDL_GL_SwapWindow(_window);
 
                 /* Delay until the next frame. */
                 SDL_Delay(40);
