@@ -20,10 +20,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
+#include <errno.h>
 #include "SDL.h"
 #include "SDL_image.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include "raster.h"
 
 /* Mark a variable as being used. */
 #define USED(x) ((void)(x))
@@ -76,6 +79,8 @@ static SDL_Rect _font_clips[] = {
 #undef OP
 };
 
+static unsigned char *_font_raster = NULL;
+
 /* The main game font */
 static struct font _font = {
 #define OP(glyph) glyph
@@ -109,6 +114,10 @@ void die(const char *format, ...) {
 
 /* Clean up any used memory. */
 static void _clean_up(void) {
+        if (_font_raster) {
+                free(_font_raster);
+        }
+
         if (glIsTexture(_font.texture)) {
                 glDeleteTextures(1, &_font.texture);
         }
@@ -179,6 +188,11 @@ void draw_text(struct font *font,
                         }
                 }
         }
+}
+
+/* Return the number of bytes needed to store a number of columns. */
+int get_num_bytes_needed_for_columns(int columns) {
+        return (columns / 8) + (columns % 8 > 0);
 }
 
 /* Load an OpenGL texture from a file. */
@@ -422,6 +436,24 @@ int main(int argc, char *argv[]) {
         glLoadIdentity();
         gluOrtho2D(0.0f, (GLdouble)WINDOW_WIDTH, 0.0f, (GLdouble)WINDOW_HEIGHT);
 
+        {
+                SDL_Surface *font_surf;
+
+                font_surf = IMG_Load("data/images/font.png");
+                if (!font_surf) {
+                        die("IMG_Load: %s\n", IMG_GetError());
+                }
+
+                _font_raster = malloc(sizeof(*_font_raster) * get_raster_width_in_bytes(font_surf->w) * font_surf->h);
+                if (!_font_raster) {
+                        int err = errno;
+                        SDL_FreeSurface(font_surf);
+                        die("malloc: %s\n", strerror(err));
+                }
+
+                convert_image_to_raster(font_surf->w, font_surf->h, font_surf->pitch, font_surf->pixels, _font_raster);
+        }
+
         /* Load the cursor texture. */
         _cursor_sprite.texture = load_gl_texture_and_handle_surface(
             "data/images/cursor.png",
@@ -523,8 +555,13 @@ int main(int argc, char *argv[]) {
                                 glTexCoord2i(1, 0); glVertex2d(x + _cursor_sprite.width, y);
                         glEnd();
                 }
-
                 glDisable(GL_TEXTURE_2D);
+
+                /* Draw the font raster. */
+                glColor3f(1.0f, 0.0f, 0.0f);
+                glRasterPos2i(100, 100);
+                glBitmap(512, 10, 0.0f, 0.0f, 0.0f, 0.0f, (GLubyte*)_font_raster);
+
                 glFlush();
 
                 SDL_GL_SwapWindow(_window);
