@@ -322,53 +322,46 @@ void get_font_info_from_surface(SDL_Surface *surf, void *font_ptr) {
         font->height = surf->h;
 }
 
+#define DECL_TITLE_MENU(X) \
+        X("New Game", "Begin a new adventure in the land of Lambhorn.") \
+        X("Quit", "Quit playing the game.")
+#define DECL_HERITAGE_MENU(X) \
+        X("Acolith", "Acolith are pointy eared immortals.") \
+        X("Caprons", "Caprons are goat headed folk from Im Otra.") \
+        X("Daimyo", "Daimyo are ogre demons of mysterious origin.") \
+        X("Delvren", "Delvren are mole headed undergrounders.") \
+        X("Felith", "Felith are mortal Acoliths.") \
+        X("Fleurel", "Fleurel are flower folk from Puppetwood.") \
+        X("Grimfolk", "Grimfolk are Sunstruck who escaped from Seb.") \
+        X("Los", "Los are anthro caninse from the Smited Plains.") \
+        X("Sunstruck", "Sunstruck are humans as we know them.") \
+        X("Vaawie", "Vaawie are reptilians from the Rainbow Coast.") \
+        X("Cancel", "Return to the previous menu.")
+#define DECL_TRADITION_MENU(X) \
+        X("Birane", "The Birane cult follows an ancient code of battle.") \
+        X("Scevimric", "Scevimr people obey the orders of a far off emporer.") \
+        X("Veronis", "The people of Veronis believe in folk myths of another world.") \
+        X("Cancel", "Return to the previous menu.")
+
 int main(int argc, char *argv[]) {
-        static const char *title_options[] = {
-                "New Game",
-                "Quit"
-        };
-        static const char *title_descriptions[] = {
-                "Begin a new adventure in the land of Lambhorn.",
-                "Quit playing the game."
-        };
-        static const char *heritage_options[] = {
-                "Acolith",
-                "Caprons",
-                "Daimyo",
-                "Delvren",
-                "Felith",
-                "Fleurel",
-                "Grimfolk",
-                "Los",
-                "Sunstruck",
-                "Vaawie",
-                "Cancel"
-        };
-        static const char *heritage_descriptions[] = {
-                "Acolith are pointy eared immortals.",
-                "Caprons are goat headed folk from Im Otra.",
-                "Daimyo are ogre demons of mysterious origin.",
-                "Delvren are mole headed undergrounders.",
-                "Felith are mortal Acoliths.",
-                "Fleurel are flower folk from Puppetwood.",
-                "Grimfolk are Sunstruck who escaped from Seb.",
-                "Los are anthro canines from the Smited Plains.",
-                "Sunstruck are humans as we know them.",
-                "Vaawie are reptilians from the Rainbow Coast.",
-                "Return to the previous menu."
-        };
-        static const char *tradition_options[] = {
-                "Birane",
-                "Scevimric",
-                "Veronis",
-                "Cancel"
-        };
-        static const char *tradition_descriptions[] = {
-                "The Birane cult follows an ancient code of battle.",
-                "Scevimr people obey the orders of a far off emporer.",
-                "The people of Veronis believe in folk myths of another world.",
-                "Return to previous menu."
-        };
+#define OP(option, description) option,
+        static const char *title_options[] = {DECL_TITLE_MENU(OP)};
+#undef OP
+#define OP(option, description) description,
+        static const char *title_descriptions[] = {DECL_TITLE_MENU(OP)};
+#undef OP
+#define OP(heritage, description) heritage,
+        static const char *heritage_options[] = {DECL_HERITAGE_MENU(OP)};
+#undef OP
+#define OP(heritage, description) description,
+        static const char *heritage_descriptions[] = {DECL_HERITAGE_MENU(OP)};
+#undef OP
+#define OP(tradition, description) tradition,
+        static const char *tradition_options[] = {DECL_TRADITION_MENU(OP)};
+#undef OP
+#define OP(tradition, description) description,
+        static const char *tradition_descriptions[] = {DECL_TRADITION_MENU(OP)};
+#undef OP
         struct {
                 const char *prompt;
                 int num_options;
