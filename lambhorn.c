@@ -378,6 +378,10 @@ int main(int argc, char *argv[]) {
           heritage_menu = {"Choose thine heritage.", 11, heritage_options, heritage_descriptions},
           tradition_menu = {"Choose thy tradition.", 4, tradition_options, tradition_descriptions},
           *current_menu = &title_menu;
+        enum {
+                GAME_MODE_MENU,
+                GAME_MODE_PLAY
+        } game_mode = GAME_MODE_MENU;
         int selection = 0;
 
         USED(argc);
@@ -450,36 +454,44 @@ int main(int argc, char *argv[]) {
                                                 exit(EXIT_SUCCESS);
                                                 break;
                                         case SDL_SCANCODE_DOWN:
-                                                if (selection < current_menu->num_options - 1) {
-                                                        selection++;
+                                                if (game_mode == GAME_MODE_MENU) {
+                                                        if (selection < current_menu->num_options - 1) {
+                                                                selection++;
+                                                        }
                                                 }
                                                 break;
                                         case SDL_SCANCODE_UP:
-                                                if (selection > 0) {
-                                                        selection--;
+                                                if (game_mode == GAME_MODE_MENU) {
+                                                        if (selection > 0) {
+                                                                selection--;
+                                                        }
                                                 }
                                                 break;
                                         case SDL_SCANCODE_SPACE:
-                                                if (current_menu == &title_menu) {
-                                                        if (selection == 0) {
-                                                                /* New Game */
-                                                                current_menu = &heritage_menu;
-                                                                selection = 0;
-                                                        } else if (selection == 1) {
-                                                                exit(EXIT_SUCCESS);
-                                                        }
-                                                } else if (current_menu == &heritage_menu) {
-                                                        if (selection == 10) {
-                                                                current_menu = &title_menu;
-                                                                selection = 0;
-                                                        } else {
-                                                                current_menu = &tradition_menu;
-                                                                selection = 0;
-                                                        }
-                                                } else if (current_menu == &tradition_menu) {
-                                                        if (selection == 3) {
-                                                                current_menu = &heritage_menu;
-                                                                selection = 0;
+                                                if (game_mode == GAME_MODE_MENU) {
+                                                        if (current_menu == &title_menu) {
+                                                                if (selection == 0) {
+                                                                        /* New Game */
+                                                                        current_menu = &heritage_menu;
+                                                                        selection = 0;
+                                                                } else if (selection == 1) {
+                                                                        exit(EXIT_SUCCESS);
+                                                                }
+                                                        } else if (current_menu == &heritage_menu) {
+                                                                if (selection == 10) {
+                                                                        current_menu = &title_menu;
+                                                                        selection = 0;
+                                                                } else {
+                                                                        current_menu = &tradition_menu;
+                                                                        selection = 0;
+                                                                }
+                                                        } else if (current_menu == &tradition_menu) {
+                                                                if (selection == 3) {
+                                                                        current_menu = &heritage_menu;
+                                                                        selection = 0;
+                                                                } else {
+                                                                        game_mode = GAME_MODE_PLAY;
+                                                                }
                                                         }
                                                 }
                                                 break;
@@ -492,39 +504,42 @@ int main(int argc, char *argv[]) {
                 /* Clear the screen. */
                 glClear(GL_COLOR_BUFFER_BIT);
 
-                /* Enable texturing. */
-                glEnable(GL_TEXTURE_2D);
-                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+                if (game_mode == GAME_MODE_MENU) {
+                        /* Enable texturing. */
+                        glEnable(GL_TEXTURE_2D);
+                        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-                /* Draw the menu prompt. */
-                draw_text(&_font, 9, WINDOW_HEIGHT - 5, current_menu->prompt);
+                        /* Draw the menu prompt. */
+                        draw_text(&_font, 9, WINDOW_HEIGHT - 5, current_menu->prompt);
 
-                /* Draw the options. */
-                {
-                        int i;
-                        for (i = 0; i < current_menu->num_options; i++) {
-                                draw_text(&_font, 9, WINDOW_HEIGHT - (5 + ((_font.height + 1) * (2 + i))), current_menu->options[i]);
+                        /* Draw the options. */
+                        {
+                                int i;
+                                for (i = 0; i < current_menu->num_options; i++) {
+                                        draw_text(&_font, 9, WINDOW_HEIGHT - (5 + ((_font.height + 1) * (2 + i))), current_menu->options[i]);
+                                }
                         }
+
+                        /* Draw the description of the selected option. */
+                        draw_text(&_font, 100, WINDOW_HEIGHT - (5 + ((_font.height + 1) * 2)), current_menu->descriptions[selection]);
+
+
+                        /* Draw the cursor. */
+                        {
+                                int x = 0;
+                                int y = WINDOW_HEIGHT - (5 - ((_cursor_sprite.height - _font.height) / 2) + ((_font.height + 1) * (2 + selection)));
+                                glBindTexture(GL_TEXTURE_2D, _cursor_sprite.texture);
+                                glBegin(GL_POLYGON);
+                                        glTexCoord2i(0, 0); glVertex2d(x, y);
+                                        glTexCoord2i(0, 1); glVertex2d(x, y - _cursor_sprite.height);
+                                        glTexCoord2i(1, 1); glVertex2d(x + _cursor_sprite.width, y - _cursor_sprite.height);
+                                        glTexCoord2i(1, 0); glVertex2d(x + _cursor_sprite.width, y);
+                                glEnd();
+                        }
+
+                        glDisable(GL_TEXTURE_2D);
                 }
 
-                /* Draw the description of the selected option. */
-                draw_text(&_font, 100, WINDOW_HEIGHT - (5 + ((_font.height + 1) * 2)), current_menu->descriptions[selection]);
-
-
-                /* Draw the cursor. */
-                {
-                        int x = 0;
-                        int y = WINDOW_HEIGHT - (5 - ((_cursor_sprite.height - _font.height) / 2) + ((_font.height + 1) * (2 + selection)));
-                        glBindTexture(GL_TEXTURE_2D, _cursor_sprite.texture);
-                        glBegin(GL_POLYGON);
-                                glTexCoord2i(0, 0); glVertex2d(x, y);
-                                glTexCoord2i(0, 1); glVertex2d(x, y - _cursor_sprite.height);
-                                glTexCoord2i(1, 1); glVertex2d(x + _cursor_sprite.width, y - _cursor_sprite.height);
-                                glTexCoord2i(1, 0); glVertex2d(x + _cursor_sprite.width, y);
-                        glEnd();
-                }
-
-                glDisable(GL_TEXTURE_2D);
                 glFlush();
 
                 SDL_GL_SwapWindow(_window);
